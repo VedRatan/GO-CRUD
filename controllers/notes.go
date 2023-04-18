@@ -51,26 +51,26 @@ func GetNotes(w http.ResponseWriter, r *http.Request) {
 	  if err != nil {
 		  log.Fatal(err)
 	  }
-	  var songs []primitive.M
+	  var notes []primitive.M
 	  for cur.Next(context.Background()) {
-		  var song bson.M
-		  err := cur.Decode(&song)
+		  var note bson.M
+		  err := cur.Decode(&note)
 		  if err != nil {
 			  log.Fatal(err)
 		  }
-		  songs = append(songs, song)
+		  notes = append(notes, note)
 	  }
-	  json.NewEncoder(w).Encode(songs)
+	  json.NewEncoder(w).Encode(notes)
   }
 
   func GetNote(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	var song bson.M
+	var note bson.M
 	id, _ := primitive.ObjectIDFromHex(params["id"])
 	filter := bson.M{"_id": id}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	err := noteCollection.FindOne(ctx, filter).Decode(&song)
+	err := noteCollection.FindOne(ctx, filter).Decode(&note)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			json.NewEncoder(w).Encode("Song doesn't exist")
@@ -78,7 +78,7 @@ func GetNotes(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Fatal(err)
 	}
-	json.NewEncoder(w).Encode(song)
+	json.NewEncoder(w).Encode(note)
 }
 
 func AddNote(w http.ResponseWriter, r *http.Request) {
