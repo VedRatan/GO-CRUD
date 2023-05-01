@@ -28,6 +28,8 @@ func init() {
 			log.Fatal(err)
 		}
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	connectionUri := os.Getenv("MONGO_URI")
 	dbName := os.Getenv("DB_NAME")
 	colName := os.Getenv("NOTES_COLLECTION")
@@ -36,6 +38,12 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if err := client.Ping(ctx, nil); err != nil {
+		fmt.Printf("Failed to ping MongoDB: %v\n", err)
+		return
+	}
+	
+	fmt.Println("Connected to MongoDB")
 	noteCollection = client.Database(dbName).Collection(colName)
 	fmt.Println("Notes collection ready")
 }

@@ -13,4 +13,7 @@ func RegisterNoteRoutes(router *mux.Router) {
 	router.Handle("/api/note/add/",(http.HandlerFunc(controllers.AddNote))).Methods("POST")
 	router.Handle("/api/note/update/{id}", (http.HandlerFunc(controllers.UpdateNote))).Methods("PUT")
 	router.Handle("/api/note/delete/{id}", (http.HandlerFunc(controllers.DeleteNote))).Methods("DELETE")
+	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 }
