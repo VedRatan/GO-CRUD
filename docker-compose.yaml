@@ -1,11 +1,145 @@
 version: '3'
+
 services:
+  reverse-proxy:
+    image: nginx:1.17.10
+    container_name: reverse_proxy
+    depends_on:
+        - app
+    volumes:
+      - ./allconf/:/etc/nginx/conf.d/
+    ports:
+      - 80:80
+
+# api container
   app:
     build: .
     ports:
       - "5000:5000"
+    depends_on:
+      - mongo
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:5000/health"]
       interval: 30s
       timeout: 5s
       retries: 3
+
+# database container
+  mongo:
+    image: mongo
+    # ports:
+    #   - "27017:27017"
+    volumes:
+      - mydata:/data/db
+    restart: always
+
+
+
+
+
+
+
+# monitoring stack
+
+#   node-exporter:
+#     image: prom/node-exporter:latest
+#     container_name: node-exporter
+#     restart: unless-stopped
+#     volumes:
+#       - /proc:/host/proc:ro
+#       - /sys:/host/sys:ro
+#       - /:/rootfs:ro
+#     command:
+#       - '--path.procfs=/host/proc'
+#       - '--path.rootfs=/rootfs'
+#       - '--path.sysfs=/host/sys'
+#       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+#     ports:
+#       - 9100:9100
+
+
+#   prometheus:
+#     image: prom/prometheus:latest
+#     user: root
+#     container_name: prometheus
+#     restart: unless-stopped
+#     volumes:
+#       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+#       - ./prometheus:/prometheus
+#     command:
+#       - '--config.file=/etc/prometheus/prometheus.yml'
+#       - '--storage.tsdb.path=/prometheus'
+#       - '--web.console.libraries=/etc/prometheus/console_libraries'
+#       - '--web.console.templates=/etc/prometheus/consoles'
+#       - '--web.enable-lifecycle'
+#     ports:
+#       - 9090:9090
+
+# node-exporter container
+  node-exporter:
+    image: prom/node-exporter:v1.2.2
+    container_name: node-exporter
+    network_mode: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+
+  # prometheus container
+  prometheus:
+    image: prom/prometheus:v2.33.1
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+#   grafana:
+#     image: grafana/grafana:latest
+#     user: root
+#     container_name: grafana
+#     ports:
+#       - 3000:3000
+#     restart: unless-stopped
+#     volumes:
+#       - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+#       - ./grafana:/var/lib/grafana
+
+
+  cadvisor:
+      image: gcr.io/cadvisor/cadvisor:v0.37.0
+      container_name: cadvisor
+      privileged: true
+      ports:
+      - 8080:8080
+      volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      depends_on:
+      - redis
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+    - 6379:6379
+  
+  # ci/cd pipeline
+
+  jenkins:
+    build: ./jenkins/
+    ports:
+      - "8000:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    
+
+volumes:
+  mydata:
