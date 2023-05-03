@@ -16,6 +16,7 @@ services:
     build: .
     ports:
       - "5000:5000"
+    container_name: ci-cd_app_1
     depends_on:
       - mongo
     healthcheck:
@@ -29,6 +30,7 @@ services:
     image: mongo
     # ports:
     #   - "27017:27017"
+    container_name: mongo_db
     volumes:
       - mydata:/data/db
     restart: always
@@ -139,6 +141,7 @@ services:
       - "8000:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./jenkins/jenkins_home:/var/jenkins_home
     
 
 volumes:
