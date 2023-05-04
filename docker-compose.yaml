@@ -2,7 +2,7 @@ version: '3'
 
 services:
   reverse-proxy:
-    image: nginx:1.17.10
+    image: nginx:9.0
     container_name: reverse_proxy
     depends_on:
         - app
@@ -13,7 +13,7 @@ services:
 
 # api container
   app:
-    build: .
+    image: lusciousmaestro/api_image:9.0
     ports:
       - "5000:5000"
     container_name: ci-cd_app_1
@@ -36,46 +36,6 @@ services:
     restart: always
 
 
-
-
-
-
-
-# monitoring stack
-
-#   node-exporter:
-#     image: prom/node-exporter:latest
-#     container_name: node-exporter
-#     restart: unless-stopped
-#     volumes:
-#       - /proc:/host/proc:ro
-#       - /sys:/host/sys:ro
-#       - /:/rootfs:ro
-#     command:
-#       - '--path.procfs=/host/proc'
-#       - '--path.rootfs=/rootfs'
-#       - '--path.sysfs=/host/sys'
-#       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-#     ports:
-#       - 9100:9100
-
-
-#   prometheus:
-#     image: prom/prometheus:latest
-#     user: root
-#     container_name: prometheus
-#     restart: unless-stopped
-#     volumes:
-#       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-#       - ./prometheus:/prometheus
-#     command:
-#       - '--config.file=/etc/prometheus/prometheus.yml'
-#       - '--storage.tsdb.path=/prometheus'
-#       - '--web.console.libraries=/etc/prometheus/console_libraries'
-#       - '--web.console.templates=/etc/prometheus/consoles'
-#       - '--web.enable-lifecycle'
-#     ports:
-#       - 9090:9090
 
 # node-exporter container
   node-exporter:
@@ -139,10 +99,12 @@ services:
     build: ./jenkins/
     ports:
       - "8000:8080"
+      - "50000:50000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./jenkins/jenkins_home:/var/jenkins_home
+      - jenkinsData:/var/jenkins_home
     
 
 volumes:
   mydata:
+  jenkinsData:
