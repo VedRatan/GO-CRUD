@@ -6,11 +6,21 @@ services:
     container_name: reverse_proxy
     depends_on:
         - app
+        - certbot
     volumes:
       - ./allconf/:/etc/nginx/conf.d/
+      - ./public.html:/public_html
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf:/etc/nginx/ssl:ro
     ports:
       - 80:80
+      - 443:443
 
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
 # api container
   app:
     image: lusciousmaestro/api_image:9.0
